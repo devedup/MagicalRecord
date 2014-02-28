@@ -340,4 +340,33 @@
 
 #endif
 
++ (NSArray *) MR_findAllWithArrayOfObjectIDS:(NSArray *)arrayOfObjectIDs inContext:(NSManagedObjectContext *)context
+{
+    return [self MR_findAllWithArrayOfObjectIDS:arrayOfObjectIDs sortedBy:nil inContext:context];
+}
+
++ (NSArray *) MR_findAllWithArrayOfObjectIDS:(NSArray *)arrayOfObjectIDs sortedBy:(NSString *)sortTerm inContext:(NSManagedObjectContext *)context
+{
+	if (!arrayOfObjectIDs || arrayOfObjectIDs.count == 0) {
+		return nil;
+	}
+    
+    NSFetchRequest *request = [self MR_createFetchRequestInContext:context];
+    
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"self IN %@", arrayOfObjectIDs];
+	[request setPredicate:predicate];
+    
+    NSMutableArray* sortDescriptors = [[NSMutableArray alloc] init];
+    NSArray* sortKeys = [sortTerm componentsSeparatedByString:@","];
+    for (NSString* sortKey in sortKeys) {
+        NSSortDescriptor *sortDescriptor = [[NSSortDescriptor alloc] initWithKey:sortKey ascending:YES];
+        [sortDescriptors addObject:sortDescriptor];
+    }
+    
+	[request setSortDescriptors:sortDescriptors];
+    
+	return [self MR_executeFetchRequest:request
+                              inContext:context];
+}
+
 @end
